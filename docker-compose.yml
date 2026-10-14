@@ -1,0 +1,80 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: workflow
+      POSTGRES_USER: workflow
+      POSTGRES_PASSWORD: workflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workflow -d workflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - workflow_db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - workflow_redis:/data
+
+  migrate:
+    build: .
+    env_file: .env
+    command: alembic upgrade head
+    depends_on:
+      db:
+        condition: service_healthy
+
+  bootstrap:
+    build: .
+    env_file: .env
+    command: python scripts/bootstrap.py
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    build: .
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  worker:
+    build: .
+    env_file: .env
+    command: celery -A app.celery_app.celery_app worker --loglevel=INFO --concurrency=2
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  beat:
+    build: .
+    env_file: .env
+    command: celery -A app.celery_app.celery_app beat --loglevel=INFO
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+volumes:
+  workflow_db:
+  workflow_redis:
