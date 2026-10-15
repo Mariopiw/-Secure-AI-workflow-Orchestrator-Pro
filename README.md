@@ -24,8 +24,7 @@ Professional-grade portfolio reference implementation for:
 - Alembic migrations
 - tests + GitHub Actions
 
-## Explain it like you're 10
-
+## ...
 Imagine an important school permission form:
 
 ```text
@@ -77,7 +76,7 @@ openssl rand -hex 32
 openssl rand -hex 32
 ```
 
-Use strong values for `JWT_SECRET` and `WEBHOOK_SIGNING_SECRET`, and change all bootstrap
+... strong values for `JWT_SECRET` and `WEBHOOK_SIGNING_SECRET`, and change all bootstrap
 passwords.
 
 ## Step 2 — start
@@ -104,7 +103,7 @@ Open:
 http://localhost:8000/docs
 ```
 
-## Step 3 — learn the three identities
+##  .... the three identities
 
 Bootstrap creates:
 
@@ -316,10 +315,7 @@ Use `/metrics` with Prometheus/Grafana later.
 4. **Human authorization boundary** — AI recommends; authorized human decides.
 5. **Reconciliation** — uncertain side effects are verified, not blindly replayed.
 
-## Do not add yet
-
-Do not immediately add:
-
+## in the futer 
 ```text
 Kafka
 Kubernetes
